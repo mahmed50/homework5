@@ -1,0 +1,25 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class APIService {
+  final String baseUrl = 'https://opentdb.com';
+
+  Future<List<dynamic>> fetchCategories() async {
+    final response = await http.get(Uri.parse('$baseUrl/api_category.php'));
+    if (response.statusCode == 200) {
+      return json.decode(response.body)['trivia_categories'];
+    } else {
+      throw Exception('Failed to load categories');
+    }
+  }
+
+  Future<List<dynamic>> fetchQuestions(Map<String, String> queryParams) async {
+    final uri = Uri.https(baseUrl.replaceAll('https://', ''), '/api.php', queryParams);
+    final response = await http.get(uri);
+    if (response.statusCode == 200) {
+      return json.decode(response.body)['results'];
+    } else {
+      throw Exception('Failed to load questions');
+    }
+  }
+}

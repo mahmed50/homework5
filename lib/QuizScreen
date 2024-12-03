@@ -1,0 +1,87 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
+
+class QuizScreen extends StatefulWidget {
+  final List<dynamic> questions;
+
+  QuizScreen({required this.questions});
+
+  @override
+  _QuizScreenState createState() => _QuizScreenState();
+}
+
+class _QuizScreenState extends State<QuizScreen> {
+  int currentQuestion = 0;
+  int score = 0;
+  int timeLeft = 15;
+  late Timer timer;
+
+  @override
+  void initState() {
+    super.initState();
+    startTimer();
+  }
+
+  void startTimer() {
+    timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (timeLeft > 0) {
+        setState(() => timeLeft--);
+      } else {
+        nextQuestion();
+      }
+    });
+  }
+
+  void nextQuestion() {
+    timer.cancel();
+    if (currentQuestion < widget.questions.length - 1) {
+      setState(() {
+        currentQuestion++;
+        timeLeft = 15;
+      });
+      startTimer();
+    } else {
+      // Show end screen
+    }
+  }
+
+  void checkAnswer(String selected, String correct) {
+    if (selected == correct) {
+      setState(() => score++);
+    }
+    nextQuestion();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final question = widget.questions[currentQuestion];
+    return Scaffold(
+      appBar: AppBar(title: Text('Question ${currentQuestion + 1}')),
+      body: Column(
+        children: [
+          Text(question['question']),
+          ...question['answers'].map((answer) => ElevatedButton(
+                onPressed: () => checkAnswer(answer, question['correct_answer']),
+                child: Text(answer),
+              )),
+          Text('Time left: $timeLeft seconds'),
+          Text('Score: $score'),
+        ],
+      ),
+    );
+  }
+}
+
+List<Map<String, String>> missedQuestions = [];
+
+void checkAnswer(String selected, String correct) {
+  if (selected == correct) {
+    setState(() => score++);
+  } else {
+    missedQuestions.add({
+      'question': widget.questions[currentQuestion]['question'],
+      'correct_answer': correct,
+    });
+  }
+  nextQuestion();
+}

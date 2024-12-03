@@ -1,0 +1,67 @@
+import 'package:flutter/material.dart';
+
+class SetupScreen extends StatefulWidget {
+  final Function(Map<String, String>) onStartQuiz;
+
+  SetupScreen({required this.onStartQuiz});
+
+  @override
+  _SetupScreenState createState() => _SetupScreenState();
+}
+
+class _SetupScreenState extends State<SetupScreen> {
+  String? selectedCategory;
+  String selectedDifficulty = 'easy';
+  String selectedType = 'multiple';
+  int numQuestions = 10;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Setup Quiz')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            DropdownButton<String>(
+              value: selectedCategory,
+              hint: Text('Select Category'),
+              onChanged: (value) => setState(() => selectedCategory = value),
+              items: [...], // Populate using fetchCategories() data
+            ),
+            DropdownButton<String>(
+              value: selectedDifficulty,
+              onChanged: (value) => setState(() => selectedDifficulty = value!),
+              items: ['easy', 'medium', 'hard']
+                  .map((diff) => DropdownMenuItem(value: diff, child: Text(diff)))
+                  .toList(),
+            ),
+            DropdownButton<String>(
+              value: selectedType,
+              onChanged: (value) => setState(() => selectedType = value!),
+              items: ['multiple', 'boolean']
+                  .map((type) => DropdownMenuItem(value: type, child: Text(type)))
+                  .toList(),
+            ),
+            TextField(
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(labelText: 'Number of Questions'),
+              onChanged: (value) => setState(() => numQuestions = int.tryParse(value) ?? 10),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                widget.onStartQuiz({
+                  'amount': '$numQuestions',
+                  'category': selectedCategory ?? '',
+                  'difficulty': selectedDifficulty,
+                  'type': selectedType,
+                });
+              },
+              child: Text('Start Quiz'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

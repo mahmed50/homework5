@@ -1,0 +1,105 @@
+import 'package:flutter/material.dart';
+
+class SummaryScreen extends StatelessWidget {
+  final int totalQuestions;
+  final int correctAnswers;
+  final List<Map<String, String>> missedQuestions;
+  final VoidCallback onRetakeQuiz;
+  final VoidCallback onReturnToSetup;
+
+  SummaryScreen({
+    required this.totalQuestions,
+    required this.correctAnswers,
+    required this.missedQuestions,
+    required this.onRetakeQuiz,
+    required this.onReturnToSetup,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Quiz Summary')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Quiz Completed!',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 16),
+            Text('Total Questions: $totalQuestions'),
+            Text('Correct Answers: $correctAnswers'),
+            Text('Incorrect Answers: ${totalQuestions - correctAnswers}'),
+            SizedBox(height: 16),
+            Text(
+              'Missed Questions:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: missedQuestions.length,
+                itemBuilder: (context, index) {
+                  final question = missedQuestions[index];
+                  return ListTile(
+                    title: Text(question['question']!),
+                    subtitle: Text('Correct Answer: ${question['correct_answer']}'),
+                  );
+                },
+              ),
+            ),
+            SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: onRetakeQuiz,
+                  child: Text('Retake Quiz'),
+                ),
+                ElevatedButton(
+                  onPressed: onReturnToSetup,
+                  child: Text('Back to Setup'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+void nextQuestion() {
+  timer.cancel();
+  if (currentQuestion < widget.questions.length - 1) {
+    setState(() {
+      currentQuestion++;
+      timeLeft = 15;
+    });
+    startTimer();
+  } else {
+    // Navigate to SummaryScreen
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SummaryScreen(
+          totalQuestions: widget.questions.length,
+          correctAnswers: score,
+          missedQuestions: missedQuestions,
+          onRetakeQuiz: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => QuizScreen(questions: widget.questions),
+              ),
+            );
+          },
+          onReturnToSetup: () {
+            Navigator.pop(context); // Return to setup screen
+          },
+        ),
+      ),
+    );
+  }
+}
